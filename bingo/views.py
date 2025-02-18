@@ -9,6 +9,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Task, UserTask, Leaderboard
 from .serializers import TaskSerializer, UserTaskSerializer, LeaderboardSerializer
+from django.contrib.auth import authenticate
+
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 
 @api_view(['GET'])
 def get_tasks(request):
@@ -40,3 +44,39 @@ def leaderboard(request):
     serializer = LeaderboardSerializer(players, many=True)
     return Response(serializer.data)
 
+# Generate JWT token
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
+
+@api_view(['POST'])
+def register_user(request):
+    data = request.data
+    if User.objects.filter(username=data['username']).exists():
+        return Response({"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user = User.objects.create_user(
+        username=data['username'],
+        password=data['password']
+    )
+    
+    return Response({"message": "User registered successfully!"}, status=status.HTTP_201_CREATED)
+
+@api_view(['POST'])
+def login_user(request):
+    data = request.data
+    user = authenticate(username=data['username'], password=data['password'])
+    
+    if user is not None:
+        token = get_tokens_for_user(user)
+        return Response({"token": token, "username": user.username}, status=status.HTTP_200_OK)
+    
+    return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['GET'])
+def get_user_data(request):
+    user = request.user
+    return Response({"username": user.username})
