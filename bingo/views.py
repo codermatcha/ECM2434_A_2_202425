@@ -20,34 +20,6 @@ from .serializers import TaskSerializer, LeaderboardSerializer
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
-
-# Task views
-class TasksView(APIView):
-    """Handles fetching tasks via a class-based API view."""
-
-    def get(self, request):
-        tasks_data = [
-            {'id': 1, 'description': "Finish Green Consultant training", 'points': 10, 'requiresUpload': True},
-            {'id': 2, 'description': "Join a 'Green' society", 'points': 7, 'requiresUpload': True},
-            {'id': 3, 'description': "Get involved in Gift it, Reuse it scheme", 'points': 10, 'requiresUpload': False},
-            {'id': 4, 'description': "Use British Heart Foundation Banks on campus to recycle clothes", 'points': 8,
-             'requiresUpload': False},
-            {'id': 5, 'description': "Sign up to university sustainability newsletter", 'points': 5,
-             'requiresUpload': True}
-        ]
-        return Response(tasks_data, status=status.HTTP_200_OK)
-
-
-# Check user
-@api_view(['GET'])
-def check_user(request, username):
-    """Checks if a user exists by username"""
-    user = User.objects.filter(username=username).first()
-    if user:
-        return Response({"exists": True, "email": user.email})
-    return Response({'exists': False, 'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
-
 # -------------------------------
 # ✅ Email Validation Function
 # -------------------------------
