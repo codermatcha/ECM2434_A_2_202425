@@ -1,27 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import Login from "./Login";
+import Register from "./Register";
 
 const Home = () => {
-  const [tasks, setTasks] = useState([]);
-
-  useEffect(() => {
-    console.log("Home component mounted!"); // ✅ Check if Home is rendering
-    fetch("/api/tasks")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Fetched tasks:", data); // ✅ Log API response
-        setTasks(data);
-      })
-      .catch((error) => console.error("Error fetching tasks:", error));
-  }, []);
+  const [showLogin, setShowLogin] = useState(true); // Toggle between login & register
 
   return (
     <div>
-      <h2>Home Page</h2>
-      {tasks.length > 0 ? (
-        tasks.map((task, index) => <p key={index}>{task.name}</p>)
-      ) : (
-        <p>No tasks found</p>
-      )}
+      <h2>Welcome to the Bingo Game!</h2>
+
+      {/* Toggle between Login and Register Forms */}
+      <button onClick={() => setShowLogin(true)}>Login</button>
+      <button onClick={() => setShowLogin(false)}>Register</button>
+
+      {/* Show Login or Register based on state */}
+      {showLogin ? <Login /> : <Register />}
     </div>
   );
 };

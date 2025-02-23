@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
@@ -8,12 +8,6 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (localStorage.getItem("accessToken")) {
-      navigate("/profile");
-    }
-  }, [navigate]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -37,7 +31,6 @@ const Login = () => {
 
       navigate("/profile");
     } catch (error) {
-      console.error("Login error:", error);
       setError(error.message || "An error occurred during login");
     }
   };

@@ -6,10 +6,10 @@ const UserProfile = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("accessToken");
 
     if (!token) {
-      navigate("/login"); // Redirect to login if not authenticated
+      navigate("/login"); // ✅ Redirect to login if user is not authenticated
       return;
     }
 
@@ -19,8 +19,8 @@ const UserProfile = () => {
       .then((res) => res.json())
       .then((data) => setUserData(data))
       .catch(() => {
-        localStorage.removeItem("token");
-        navigate("/login"); // Redirect on error
+        localStorage.removeItem("accessToken");
+        navigate("/login"); // ✅ Redirect on error
       });
   }, [navigate]);
 
@@ -32,7 +32,7 @@ const UserProfile = () => {
           <p><strong>Username:</strong> {userData.username}</p>
           <p><strong>Email:</strong> {userData.email}</p>
           <button onClick={() => {
-            localStorage.removeItem("token");
+            localStorage.removeItem("accessToken");
             navigate("/login");
           }}>Logout</button>
         </div>
