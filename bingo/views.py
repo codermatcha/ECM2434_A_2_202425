@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate, login
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
@@ -7,72 +7,23 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-import logging
-import os
 from rest_framework.views import APIView
-from django.contrib.auth import get_user_model
+import logging
+import json
+
+from django.views.decorators.csrf import csrf_exempt
+
 from .models import Task, UserTask, Leaderboard, BingoTask
-from .serializers import TaskSerializer, LeaderboardSerializer, RegisterUserSerializer
+from .serializers import TaskSerializer, LeaderboardSerializer
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
-
-# Task views
-class TasksView(APIView):
-    """Handles fetching tasks via a class-based API view."""
-    
-    def get(self, request):
-        tasks_data = [
-            {'id': 1, 'description': "Finish Green Consultant training", 'points': 10, 'requiresUpload': True},
-            {'id': 2, 'description': "Join a 'Green' society", 'points': 7, 'requiresUpload': True},
-            {'id': 3, 'description': "Get involved in Gift it, Reuse it scheme", 'points': 10, 'requiresUpload': False},
-            {'id': 4, 'description': "Use British Heart Foundation Banks on campus to recycle clothes", 'points': 8, 'requiresUpload': False},
-            {'id': 5, 'description': "Sign up to university sustainability newsletter", 'points': 5, 'requiresUpload': True}
-        ]
-        return Response(tasks_data, status=status.HTTP_200_OK)
-
-
-# Check user
-@api_view(['GET'])
-def check_user(request, username):
-    """Checks if a user exists by username"""
-    user = User.objects.filter(username=username).first()
-    if user:
-        return Response({"exists": True, "email": user.email})
-    return Response({'exists': False, 'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
-# -------------------------------
-# ✅ Email Validation Function
-# -------------------------------
-def email_validation(email):
-    """Ensures email is from University of Exeter"""
-    try:
-        validate_email(email)
-        return email.lower().endswith('@exeter.ac.uk')
-    except ValidationError:
-        return False
 
 # -------------------------------
 # ✅ User Registration API
 # -------------------------------
-from django.contrib.auth.models import User
-from django.contrib.auth import get_user_model
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-import logging
-
-User = get_user_model()
-logger = logging.getLogger(__name__)
-
-
-@api_view(['POST'])
+@api_view(["POST"])
 def register_user(request):
     """Registers a new user"""
     data = request.data
@@ -91,9 +42,11 @@ def register_user(request):
     if not username or not password or not password_again or not email:
         return log_error("All fields are required.", status.HTTP_400_BAD_REQUEST)
 
-    # ✅ Enforce `@exeter.ac.uk` email requirement
-    if not email_validation(email):
-        return log_error("Please use your @exeter.ac.uk email only.", status.HTTP_400_BAD_REQUEST)
+    # ✅ Validate email format
+    try:
+        validate_email(email)
+    except ValidationError:
+        return log_error("Invalid email format.", status.HTTP_400_BAD_REQUEST)
 
     # ✅ Ensure username and email are unique
     if User.objects.filter(username=username).exists():
@@ -123,12 +76,12 @@ def register_user(request):
 # -------------------------------
 # ✅ User Login API
 # -------------------------------
-@api_view(['POST'])
+@api_view(["POST"])
 def login_user(request):
     """Authenticates a user and returns JWT tokens"""
     data = request.data
-    username = data.get('username')
-    password = data.get('password')
+    username = data.get("username")
+    password = data.get("password")
 
     def log_error(error_message, status_code):
         return Response({"error": error_message}, status=status_code)
@@ -145,17 +98,20 @@ def login_user(request):
 
     # ✅ Generate JWT token
     refresh = RefreshToken.for_user(user)
-    
-    return Response({
-        "refresh": str(refresh),
-        "access": str(refresh.access_token),
-        "user": username
-    }, status=status.HTTP_200_OK)
+
+    return Response(
+        {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "user": username,
+        },
+        status=status.HTTP_200_OK,
+    )
 
 # -------------------------------
 # ✅ User Profile API
 # -------------------------------
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_profile(request):
     """Fetches user profile details"""
@@ -166,12 +122,14 @@ def get_user_profile(request):
     # Ensure leaderboard exists
     leaderboard, _ = Leaderboard.objects.get_or_create(user=user)
 
-    return Response({
-        "username": user.username,
-        "total_points": leaderboard.points,
-        "completed_tasks": completed_tasks,
-        "leaderboard_rank": user_rank(leaderboard.points)
-    })
+    return Response(
+        {
+            "username": user.username,
+            "total_points": leaderboard.points,
+            "completed_tasks": completed_tasks,
+            "leaderboard_rank": user_rank(leaderboard.points),
+        }
+    )
 
 # -------------------------------
 # ✅ User Ranking Helper Function
@@ -186,23 +144,53 @@ def user_rank(points):
 # -------------------------------
 # ✅ Leaderboard API
 # -------------------------------
-@api_view(['GET'])
+@api_view(["GET"])
 def leaderboard(request):
-    players = Leaderboard.objects.order_by('-points')[:10]
+    players = Leaderboard.objects.order_by("-points")[:10]
     serializer = LeaderboardSerializer(players, many=True)
     return Response(serializer.data)
 
 # -------------------------------
 # ✅ Tasks API
 # -------------------------------
-@api_view(['GET'])
+
+@csrf_exempt
 def tasks(request):
     """Returns available tasks"""
     tasks_list = [
-        {"id": 1, "description": "Finish Green Consultant training", "points": 10, "requiresUpload": True},
-        {"id": 2, "description": "Join a 'Green' society", "points": 7, "requiresUpload": True},
-        {"id": 3, "description": "Get involved in Gift it, Reuse it scheme", "points": 10, "requiresUpload": False},
-        {"id": 4, "description": "Use British Heart Foundation Banks on campus to recycle clothes", "points": 8, "requiresUpload": False},
-        {"id": 5, "description": "Sign up to university sustainability newsletter", "points": 5, "requiresUpload": True}
+        {"id": 1, "description": "Finish Green Consultant training", "points": 10, "requiresUpload": True, "requireScan": False},
+        {"id": 2, "description": "Join a 'Green' society", "points": 7, "requiresUpload": True, "requireScan": False},
+        {"id": 3, "description": "Get involved in Gift it, Reuse it scheme", "points": 10, "requiresUpload": False, "requireScan": True},
+        {"id": 4, "description": "Use British Heart Foundation Banks on campus to recycle clothes", "points": 8, "requiresUpload": False, "requireScan": True},
+        {"id": 5, "description": "Sign up to university sustainability newsletter", "points": 5, "requiresUpload": True, "requireScan": False},
     ]
-    return Response(tasks_list)
+
+    return JsonResponse(tasks_list, safe=False) 
+
+
+
+# -------------------------------
+# ✅ Task Views API (Class-Based)
+# -------------------------------
+class TasksView(APIView):
+    """Handles fetching tasks via a class-based API view."""
+    def get(self, request):
+        tasks_data = [
+            {'id': 1, 'description': "Finish Green Consultant training", 'points': 10, 'requiresUpload': True},
+            {'id': 2, 'description': "Join a 'Green' society", 'points': 7, 'requiresUpload': True},
+            {'id': 3, 'description': "Get involved in Gift it, Reuse it scheme", 'points': 10, 'requiresUpload': False},
+            {'id': 4, 'description': "Use British Heart Foundation Banks on campus to recycle clothes", 'points': 8, 'requiresUpload': False},
+            {'id': 5, 'description': "Sign up to university sustainability newsletter", 'points': 5, 'requiresUpload': True}
+        ]
+        return Response(tasks_data, status=status.HTTP_200_OK)
+
+# -------------------------------
+# ✅ Check if User Exists
+# -------------------------------
+@api_view(["GET"])
+def check_user(request, username):
+    """Checks if a user exists by username"""
+    user = User.objects.filter(username=username).first()
+    if user:
+        return Response({"exists": True, "email": user.email})
+    return Response({"exists": False, "error": "User not found"}, status=status.HTTP_404_NOT_FOUND)

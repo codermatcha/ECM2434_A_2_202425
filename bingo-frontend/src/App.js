@@ -2,7 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import Register from "./components/Register";
 import Login from "./components/Login";
-import Profile from "./components/Profile";  // ✅ Import Profile component
+import Profile from "./components/Profile";  
+import BingoBoard from "./components/BingoBoard";
 
 const Home = () => {
     return (
@@ -16,6 +17,8 @@ const Home = () => {
     );
 };
 
+const API_URL = "http://127.0.0.1:8000";  // Ensure this matches your Django backend
+
 const App = () => {
     return (
         <Router>
@@ -24,6 +27,7 @@ const App = () => {
                 <Route path="/register" element={<Register />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/profile" element={<Profile />} />  {/* ✅ Ensure /profile exists */}
+                <Route path="/bingo" element={<BingoBoard />} />
             </Routes>
         </Router>
     );

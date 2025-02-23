@@ -1,78 +1,47 @@
-/* bingoboard.css */
-.container {
-  max-width: 1000px;
-  margin: 20px auto;
-  padding: 20px;
+.bingo-container {
+  text-align: center;
+  margin-top: 20px;
 }
 
-.bingo-header{
-  text-align: center;
+.bingo-header {
+  font-size: 24px;
+  margin-bottom: 10px;
 }
+
 .bingo-board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  background-color: #000;
-  border: 2px solid #000;
-  width: 100%;  /* Adjust width to fit the page */
-  max-width: 650px; /* Limit max size */
-  margin: 0 auto;
+  justify-content: center;
+  max-width: 600px;
+  margin: auto;
 }
 
-
 .bingo-cell {
-  aspect-ratio: 1;
-  background-color: white;
-  border: 2px solid #ddd;
-  display: flex;
-  padding: 10px;
-  border-radius: 5px ;
-  width: 180px;
-  height: 200px;
+  border: 2px solid #333;
+  padding: 15px;
+  text-align: center;
+  font-size: 14px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: background 0.3s;
 }
 
 .bingo-cell:hover {
- box-shadow: 0 2px 8px white;
+  background-color: #ddd;
 }
 
-.bingo-cell.completed {
- background-color: green;
- border-color: #90ee90;
-}
-
-.cell-content {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 16px;
+.completed {
+  background-color: #8bc34a; /* Green for completed tasks */
+  color: white;
 }
 
 .points {
   font-weight: bold;
-  color: #666;
-  align-items: center;
-  margin-left: 100px;
-  margin-bottom: -120px;
+  font-size: 16px;
 }
 
-.description {
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  margin-left: -120px;
-  margin-bottom: 100px;
-
-}
-
-.upload-indicator {
-  margin-top: 10px;
-  font-size: 20px
-}
-
-.scan-indicator{
-  margin-top: 10px;
-  font-size: 20px
+.upload-indicator, .scan-indicator {
+  font-size: 18px;
+  margin-top: 5px;
 }

@@ -1,16 +1,18 @@
 from django.urls import path
 from django.shortcuts import render
-from .views import register_user, login_user, get_user_profile # ✅ Ensure these functions exist in views.py
+from .views import register_user, login_user, get_user_profile  # ✅ Ensure these functions exist in views.py
 
+# Home Page View
 def home_page(request):
     return render(request, "home.html")
 
+# Register Page View
 def register_page(request):
     return render(request, "register.html")
 
+# Login Page View
 def login_page(request):
     return render(request, "login.html")  
-
 
 urlpatterns = [
     path("", home_page, name="home"),  # Home page
@@ -19,5 +21,4 @@ urlpatterns = [
     path("api/register/", register_user, name="register_user"),  # Register API
     path("api/login/", login_user, name="login_user"),  # ✅ Login API
     path("api/profile/", get_user_profile, name="user_profile"),  # ✅ Profile API
-
 ]

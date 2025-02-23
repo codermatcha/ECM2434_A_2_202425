@@ -67,6 +67,7 @@ CORS_ALLOW_HEADERS = [
     'Content-Type',
     'Authorization',
 ]
+
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Allow requests from React
@@ -83,7 +84,6 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication', 
         'rest_framework.authentication.TokenAuthentication',  # If using token-based auth
         'rest_framework.authentication.SessionAuthentication',  # If using session-based auth
-          # Use JWT tokens
     ),
 }
 
@@ -149,3 +149,7 @@ REST_FRAMEWORK = {
 }
 
 ROOT_URLCONF = 'ECM2434_A_2_202425.urls'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
