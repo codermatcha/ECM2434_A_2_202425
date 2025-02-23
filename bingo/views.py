@@ -69,13 +69,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def email_validation(email):
-    """Ensures email is from University of Exeter"""
-    try:
-        validate_email(email)
-        return email.lower().endswith('@exeter.ac.uk')
-    except ValidationError:
-        return False
 
 @api_view(['POST'])
 def register_user(request):
