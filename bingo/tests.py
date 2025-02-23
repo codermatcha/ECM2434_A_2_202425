@@ -3,7 +3,14 @@ from django.test import TestCase
 
 
 from django.core.exceptions import ValidationError
-from .views import email_validation
+from .views import email_validation, user_rank, leaderboard, tasks
+from django.test import TestCase
+from django.contrib.auth import get_user_model
+from rest_framework.test import APIClient
+from rest_framework import status
+from django.urls import reverse
+User = get_user_model()
+
 
 class EmailValidationTest(TestCase):
     def assertEmailValidation(self, email, expected_result, msg):
