@@ -1,63 +1,65 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+import { useNavigate } from "react-router-dom";  // ✅ Import useNavigate
 
 const Login = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        username: "",
+        password: ""
+    });
 
-  const handleLogin = async (event) => {
-    event.preventDefault();
-    setError("");
+    const [message, setMessage] = useState("");
+    const navigate = useNavigate();  // ✅ Navigation function for redirecting
 
-    try {
-      const response = await fetch(`${API_URL}/api/login/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.detail || data.error || "Login failed");
-      }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-      localStorage.setItem("accessToken", data.access);
-      localStorage.setItem("refreshToken", data.refresh);
-      localStorage.setItem("username", username);
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/login/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            });
 
-      navigate("/profile");
-    } catch (error) {
-      setError(error.message || "An error occurred during login");
-    }
-  };
+            const data = await response.json();
 
-  return (
-    <div>
-      <h2>Login</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
-    </div>
-  );
+            if (response.ok) {
+                localStorage.setItem("access_token", data.access);  // ✅ Store JWT token
+                localStorage.setItem("username", data.user);  // ✅ Store username
+                setMessage("Login successful! Redirecting...");
+
+                setTimeout(() => {
+                    navigate("/profile");  // ✅ Redirect to profile page
+                }, 1000);
+            } else {
+                setMessage(data.error || "Login failed.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            setMessage("An error occurred. Please try again.");
+        }
+    };
+
+    return (
+        <div>
+            <h2>Login</h2>
+            {message && <p>{message}</p>}
+            <form onSubmit={handleSubmit}>
+                <label>Username:</label>
+                <input type="text" name="username" value={formData.username} onChange={handleChange} required />
+
+                <label>Password:</label>
+                <input type="password" name="password" value={formData.password} onChange={handleChange} required />
+
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    );
 };
 
 export default Login;
