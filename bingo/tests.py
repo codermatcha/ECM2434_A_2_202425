@@ -34,15 +34,6 @@ class EmailValidationTest(TestCase):
         self.assertEmailValidation("", False, "Empty string email should return False")
         self.assertEmailValidation(None, False, "Null email input should return False")
 
-
-
-from django.test import TestCase
-from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
-from rest_framework import status
-from django.urls import reverse
-User = get_user_model()
-
 class RegisterUserTests(TestCase):
     def setUp(self):
         """Set up the test client and user registration URL."""
