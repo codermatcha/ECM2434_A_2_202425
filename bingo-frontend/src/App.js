@@ -16,6 +16,8 @@ const Home = () => {
     );
 };
 
+const API_URL = "http://127.0.0.1:8000";  // Ensure this matches your Django backend
+
 const App = () => {
     return (
         <Router>
