@@ -27,3 +27,16 @@ Backend: Django, Django REST Framework (DRF)
 Database: SQLite/PostgreSQL
 Authentication: Django Authentication
 Other Tools: QR Code Generation, Django Admin
+
+Instructions for installation and setup 
+✅ Python 3.x – Download and install from Python.org
+✅ Git – Download and install from Git website
+✅ Virtual Environment – A Python environment manager for dependency isolation
+If you have thse installed, run on your terminal 
+python --version    
+git --version       
+
+Clone the Repository 
+
+
+
