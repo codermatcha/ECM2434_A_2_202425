@@ -12,6 +12,8 @@ from rest_framework.views import APIView
 import logging
 import json
 
+from django.views.decorators.csrf import csrf_exempt
+
 from .models import Task, UserTask, Leaderboard, BingoTask
 from .serializers import TaskSerializer, LeaderboardSerializer
 
@@ -151,17 +153,21 @@ def leaderboard(request):
 # -------------------------------
 # ✅ Tasks API
 # -------------------------------
-@api_view(["GET"])
+
+@csrf_exempt
 def tasks(request):
     """Returns available tasks"""
     tasks_list = [
-        {"id": 1, "description": "Finish Green Consultant training", "points": 10, "requiresUpload": True},
-        {"id": 2, "description": "Join a 'Green' society", "points": 7, "requiresUpload": True},
-        {"id": 3, "description": "Get involved in Gift it, Reuse it scheme", "points": 10, "requiresUpload": False},
-        {"id": 4, "description": "Use British Heart Foundation Banks on campus to recycle clothes", "points": 8, "requiresUpload": False},
-        {"id": 5, "description": "Sign up to university sustainability newsletter", "points": 5, "requiresUpload": True},
+        {"id": 1, "description": "Finish Green Consultant training", "points": 10, "requiresUpload": True, "requireScan": False},
+        {"id": 2, "description": "Join a 'Green' society", "points": 7, "requiresUpload": True, "requireScan": False},
+        {"id": 3, "description": "Get involved in Gift it, Reuse it scheme", "points": 10, "requiresUpload": False, "requireScan": True},
+        {"id": 4, "description": "Use British Heart Foundation Banks on campus to recycle clothes", "points": 8, "requiresUpload": False, "requireScan": True},
+        {"id": 5, "description": "Sign up to university sustainability newsletter", "points": 5, "requiresUpload": True, "requireScan": False},
     ]
-    return Response(tasks_list)
+
+    return JsonResponse(tasks_list, safe=False) 
+
+
 
 # -------------------------------
 # ✅ Task Views API (Class-Based)

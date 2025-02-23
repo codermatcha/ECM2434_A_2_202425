@@ -1,67 +1,50 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import BingoBoard from "./BingoBoard"; 
+import "./Profile.css"; // ✅ Updated CSS import
+
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const Profile = () => {
-    const [profileData, setProfileData] = useState(null);
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();  // ✅ Navigation function
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchProfile = async () => {
-            const token = localStorage.getItem("access_token");  // ✅ Get JWT token
-            const username = localStorage.getItem("username");  // ✅ Get username
+        console.log("Fetching user profile from API:", `${API_URL}/api/profile/`);
 
-            if (!token || !username) {
-                navigate("/login");  // ✅ If no token, redirect to login
-                return;
-            }
-
-            const response = await fetch("http://127.0.0.1:8000/api/profile/", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`  // ✅ Send token for authentication
+        axios.get(`${API_URL}/api/profile/`, { withCredentials: true })
+            .then(response => {
+                console.log("User profile response:", response.data);
+                if (!response.data || typeof response.data !== "object") {
+                    console.error("Invalid profile data:", response.data);
+                    setError("Invalid profile response.");
+                    setUser({});
+                } else {
+                    setUser(response.data);
                 }
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error("Error fetching user profile:", error);
+                setError("Failed to load profile.");
+                setUser({});
+                setLoading(false);
             });
-
-            const data = await response.json();
-            if (response.ok) {
-                setProfileData(data);
-            } else {
-                console.error("Failed to fetch profile:", data);
-                navigate("/login");  // ✅ If API fails, redirect to login
-            }
-            setLoading(false);
-        };
-
-        fetchProfile();
-    }, [navigate]);
+    }, []);
 
     if (loading) return <p>Loading profile...</p>;
+    if (error) return <p style={{ color: "red" }}>{error}</p>;
 
     return (
-        <div>
-            <h2>Welcome, {profileData.username}!</h2>
-            <p>Total Points: {profileData.total_points}</p>
+        <div className="profile-container">
+            <h1>Welcome, {user.username || "Guest"}!</h1>
+            <p><strong>Total Points:</strong> {user.total_points || 0}</p>
+            <p><strong>Completed Tasks:</strong> {user.completed_tasks || 0}</p>
+            <p><strong>Leaderboard Rank:</strong> {user.leaderboard_rank || "N/A"}</p>
 
-            <h3>Your Bingo Board</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "10px" }}>
-                {profileData.all_tasks.map((task) => (
-                    <div
-                        key={task.id}
-                        style={{
-                            padding: "20px",
-                            border: "2px solid black",
-                            textAlign: "center",
-                            backgroundColor: profileData.completed_tasks.includes(task.id) ? "green" : "white",
-                            color: profileData.completed_tasks.includes(task.id) ? "white" : "black",
-                            fontWeight: "bold"
-                        }}
-                    >
-                        {task.description}
-                    </div>
-                ))}
-            </div>
+            {/* ✅ Bingo Board Integrated */}
+            <BingoBoard />
         </div>
     );
 };

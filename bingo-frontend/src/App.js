@@ -2,8 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import Register from "./components/Register";
 import Login from "./components/Login";
-import Profile from "./components/Profile";  // ✅ Import Profile component
-import UserProfile from "./components/Userprofile";
+import Profile from "./components/Profile";  
 import BingoBoard from "./components/BingoBoard";
 
 const Home = () => {
@@ -28,7 +27,6 @@ const App = () => {
                 <Route path="/register" element={<Register />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/profile" element={<Profile />} />  {/* ✅ Ensure /profile exists */}
-                <Route path="/profile" element={<UserProfile />} />
                 <Route path="/bingo" element={<BingoBoard />} />
             </Routes>
         </Router>
