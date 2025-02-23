@@ -1,46 +1,40 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import BingoBoard from "./BingoBoard"; // ✅ Import the BingoBoard component
+import "./UserProfile.css"; // Ensure styling is correct
+
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const UserProfile = () => {
-  const [userData, setUserData] = useState(null);
-  const navigate = useNavigate();
-  
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    if (!token) {
-      navigate("/login"); // ✅ Redirect to login if user is not authenticated
-      return;
-    }
+    useEffect(() => {
+        axios.get(`${API_URL}/api/profile/`, { withCredentials: true })
+            .then(response => {
+                setUser(response.data);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error("Error fetching user profile:", error);
+                setLoading(false);
+            });
+    }, []);
 
-    fetch("http://127.0.0.1:8000/api/profile/", {
-      headers: { Authorization: `Token ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => setUserData(data))
-      .catch(() => {
-        localStorage.removeItem("accessToken");
-        navigate("/login"); // ✅ Redirect on error
-      });
-  }, [navigate]);
+    if (loading) return <p>Loading profile...</p>;
+    if (!user) return <p>Error loading profile.</p>;
 
-  return (
-    <div>
-      <h2>User Profile</h2>
-      {userData ? (
-        <div>
-          <p><strong>Username:</strong> {userData.username}</p>
-          <p><strong>Email:</strong> {userData.email}</p>
-          <button onClick={() => {
-            localStorage.removeItem("accessToken");
-            navigate("/login");
-          }}>Logout</button>
+    return (
+        <div className="profile-container">
+            <h1>Welcome, {user.username}!</h1>
+            <p><strong>Total Points:</strong> {user.total_points}</p>
+            <p><strong>Completed Tasks:</strong> {user.completed_tasks}</p>
+            <p><strong>Leaderboard Rank:</strong> {user.leaderboard_rank}</p>
+
+            {/* ✅ Embed the Bingo Board component */}
+            <BingoBoard />
         </div>
-      ) : (
-        <p>Loading...</p>
-      )}
-    </div>
-  );
+    );
 };
 
 export default UserProfile;
