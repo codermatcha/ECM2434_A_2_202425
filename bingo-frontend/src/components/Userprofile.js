@@ -1,78 +1,46 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const API_URL = process.env.REACT_APP_API_URL;
-
-const Profile = () => {
-  const [userData, setUserData] = useState({});
-  const [tasks, setTasks] = useState([]);
+const UserProfile = () => {
+  const [userData, setUserData] = useState(null);
   const navigate = useNavigate();
-
+  
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/user/`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
-        });
-        console.log('User Data:', response.data);
-        setUserData(response.data);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    };
+    const token = localStorage.getItem("token");
 
-    const fetchCompletedTasks = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/tasks/`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        setTasks(response.data);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-      }
-    };
+    if (!token) {
+      navigate("/login"); // Redirect to login if not authenticated
+      return;
+    }
 
-    fetchUserData();
-    fetchCompletedTasks();
+    fetch("http://127.0.0.1:8000/api/profile/", {
+      headers: { Authorization: `Token ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => setUserData(data))
+      .catch(() => {
+        localStorage.removeItem("token");
+        navigate("/login"); // Redirect on error
+      });
   }, [navigate]);
 
   return (
-    <div className="profile-container">
-      <h1>Player Profile</h1>
-      <div className="profile-info">
-        <h2>Welcome, {userData.username}</h2>
-        <p><strong>Total Points:</strong> {userData.total_points || 0}</p>
-        <p><strong>Completed Tasks:</strong> {tasks.length}</p>
-      </div>
-
-      <div className="completed-tasks">
-        <h3>Completed Bingo Tasks</h3>
-        {tasks.length > 0 ? (
-          <ul>
-            {tasks.map(task => (
-              <li key={task.id}>{task.description}</li>
-            ))}
-          </ul>
-        ) : (
-          <p>No completed tasks yet.</p>
-        )}
-      </div>
-
-
-      <div className="buttons">
-        <button onClick={() => navigate('/bingoboard')}>Back to Bingo Board</button>
-        <button
-          onClick={() => {
-            localStorage.removeItem('token');
-            navigate('/login');
-          }}
-        >
-          Logout
-        </button>
-      </div>
+    <div>
+      <h2>User Profile</h2>
+      {userData ? (
+        <div>
+          <p><strong>Username:</strong> {userData.username}</p>
+          <p><strong>Email:</strong> {userData.email}</p>
+          <button onClick={() => {
+            localStorage.removeItem("token");
+            navigate("/login");
+          }}>Logout</button>
+        </div>
+      ) : (
+        <p>Loading...</p>
+      )}
     </div>
   );
 };
 
-export default Profile;
+export default UserProfile;

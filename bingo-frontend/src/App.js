@@ -1,26 +1,21 @@
-import React from 'react';
-import {Routes, Route } from 'react-router-dom';
-import Home from './components/Home';
-import Userprofile from './components/Userprofile';
-import Login from './components/Login';
-import Register from './components/Register';
-import Leaderboard from './components/Leaderboard';
-import BingoBoard from './components/BingoBoard';
-import Upload from './components/Upload';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Login from "./components/Login";
+import UserProfile from "./components/Userprofile";
+import Home from "./components/Home";
 
 const App = () => {
+  console.log("App component is rendering!"); // ✅ Debug message
+
   return (
-    <div>
+    <Router>
+      <h1>React App Loaded ✅</h1> {/* ✅ If this doesn't show, React isn't rendering */}
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/userprofile" element={<Userprofile />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/bingo" element={<BingoBoard />} />
-        <Route path="/upload" element={<Upload />} />
+        <Route path="/profile" element={<UserProfile />} />
       </Routes>
-    </div>
+    </Router>
   );
 };
 

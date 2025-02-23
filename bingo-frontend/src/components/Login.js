@@ -1,138 +1,68 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-    profile: 'Player',
-    extraPassword: '',
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleProfileChange = (e) => {
-    const { value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      profile: value,
-      extraPassword: value === 'Player' ? '' : prev.extraPassword,
-    }));
-  };
-
-  const validateForm = () => {
-    if (!formData.username.trim()) return 'Username is required';
-    if (!formData.password) return 'Password is required';
-    if (['Game Keeper', 'Developer'].includes(formData.profile) && !formData.extraPassword) {
-      return `Special password required for ${formData.profile}`;
+  useEffect(() => {
+    if (localStorage.getItem("accessToken")) {
+      navigate("/profile");
     }
-    return null;
-  };
+  }, [navigate]);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
-      setLoading(false);
-      return;
-    }
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    setError("");
 
     try {
-      const response = await fetch(`${API_URL}/login/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.username,
-          password: formData.password,
-        }),
+      const response = await fetch(`${API_URL}/api/login/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
       });
 
       const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.detail || data.error || 'Login failed');
+        throw new Error(data.detail || data.error || "Login failed");
       }
 
-      // Store tokens and navigate
-      localStorage.setItem('accessToken', data.access);
-      localStorage.setItem('refreshToken', data.refresh);
-      navigate('/bingoboard');
-    } catch (err) {
-      console.error('Login error:', err);
-      setError(err.message || 'An error occurred during login');
-    } finally {
-      setLoading(false);
+      localStorage.setItem("accessToken", data.access);
+      localStorage.setItem("refreshToken", data.refresh);
+      localStorage.setItem("username", username);
+
+      navigate("/profile");
+    } catch (error) {
+      console.error("Login error:", error);
+      setError(error.message || "An error occurred during login");
     }
   };
 
   return (
-    <div className="login-container">
+    <div>
       <h2>Login</h2>
-      {error && <div className="error-message">{error}</div>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
       <form onSubmit={handleLogin}>
-        <div className="form-group">
-          <input
-            type="text"
-            placeholder="Username"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <input
-            type="password"
-            placeholder="Password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <select name="profile" value={formData.profile} onChange={handleProfileChange} required>
-            <option value="Player">Player</option>
-            <option value="Game Keeper">Game Keeper</option>
-            <option value="Developer">Developer</option>
-          </select>
-        </div>
-        {(formData.profile === 'Game Keeper' || formData.profile === 'Developer') && (
-          <div className="form-group">
-            <input
-              type="password"
-              placeholder="Special Password"
-              name="extraPassword"
-              value={formData.extraPassword}
-              onChange={handleChange}
-              required
-            />
-          </div>
-        )}
-        <button type="submit" disabled={loading}>
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit">Login</button>
       </form>
-      <p>
-        Don't have an account? <Link to="/register">Register Here!</Link>
-      </p>
     </div>
   );
 };
