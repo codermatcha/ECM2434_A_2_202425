@@ -13,54 +13,63 @@ const BingoBoard = () => {
       description: "Finish Green Consultant training",
       points: 10,
       requiresUpload: true,
+      requireScan: false,
     },
     {
       id: 2,
       description:  "Join a 'Green' society",
       points: 7,
       requiresUpload: true,
+      requireScan: false,
     },
     {
       id: 3,
       description:  "Get involved in Gift it, Reuse it scheme",
       points: 10,
       requiresUpload: false,
+      requireScan: true,
     },
     {
       id: 4,
       description: "Use British Heart Foundation Banks on campus to recycle clothes",
       points: 8,
       requiresUpload: false,
+      requireScan: true,
     },
     {
       id: 5,
       description: "Sign up to university sustainability newsletter",
       points: 5,
       requiresUpload: true,
+      requireScan: false,
     },
     {
       id: 6,
       description: "Refill your reusable water bottle from one of over 100 free water refill stations on campus",
       points: 8,
       requiresUpload: true,
+      requireScan: false,
     },
     {
       id: 7,
       description: "Shopping at Exeter's zero waste shops, Nourish and Zero",
       points: 10,
       requiresUpload: false,
+      requireScan: true,
     },
     {
       id: 8,
       description: "Empty glasses put in nearest glass bottle bank",
       points: 8,
       requiresUpload: true,
+      requireScan: false,
     },
     {
       id: 9,
       description: "Getting involved in ESV - Environmental Project",
       points: 10,
       requiresUpload: false,
+      requireScan: true,
     },
   ]);
   const navigate = useNavigate();
@@ -85,6 +94,18 @@ const BingoBoard = () => {
         )
       );
     }
+
+    if(task.requireScan){
+      localStorage.setItem('selectedChoice', task.description);
+      navigate('/scan')
+    } else{
+      setTasks(prevTasks =>
+        prevTasks.map(t =>
+        t.id === task.id ? {...t,completed: !t.completed}:t
+        )
+      );
+    }
+    
   };
 
   return (
@@ -101,6 +122,7 @@ const BingoBoard = () => {
                 <div className='points'>{tasks.points} marks</div>
                 <div className='description'>{task.description}</div>
                 {task.requiresUpload && <div className='upload indicator'>📷</div>}
+                {task.requiresScan && <div className='scan indicator'>🤳🏻</div>}
               </div>
           </div>
         ))}
