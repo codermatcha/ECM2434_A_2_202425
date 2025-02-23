@@ -260,3 +260,5 @@ class CheckUserTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertFalse(response.data['exists'])
         self.assertEqual(response.data['error'], 'User not found')
+
+#LeaderboardTests, TasksViewTests, CheckUserTests. Error due to lack of url name
