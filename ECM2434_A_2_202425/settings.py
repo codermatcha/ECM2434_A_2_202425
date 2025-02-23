@@ -149,3 +149,7 @@ REST_FRAMEWORK = {
 }
 
 ROOT_URLCONF = 'ECM2434_A_2_202425.urls'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
