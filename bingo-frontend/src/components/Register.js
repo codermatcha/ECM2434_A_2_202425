@@ -1,68 +1,70 @@
 import React, { useState } from "react";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
-
 const Register = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+    const [formData, setFormData] = useState({
+        username: "",
+        email: "",
+        password: "",
+        passwordagain: ""  // ✅ Ensure this field exists
+    });
 
-  const handleRegister = async (event) => {
-    event.preventDefault();
-    setError("");
-    setSuccess(false);
+    const [message, setMessage] = useState("");
 
-    try {
-      const response = await fetch(`${API_URL}/api/register/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, email }),
-      });
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
-      if (!response.ok) {
-        throw new Error("Registration failed. Try again.");
-      }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-      setSuccess(true);
-    } catch (error) {
-      setError(error.message || "An error occurred.");
-    }
-  };
+        if (formData.password !== formData.passwordagain) {
+            setMessage("Passwords do not match!");
+            return;
+        }
 
-  return (
-    <div>
-      <h2>Register</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>Registration successful! You can now log in.</p>}
-      
-      <form onSubmit={handleRegister}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Register</button>
-      </form>
-    </div>
-  );
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/register/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setMessage("Registration successful! You can now log in.");
+            } else {
+                setMessage(data.error || "Registration failed.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            setMessage("An error occurred. Please try again.");
+        }
+    };
+
+    return (
+        <div>
+            <h2>Register</h2>
+            {message && <p>{message}</p>}
+            <form onSubmit={handleSubmit}>
+                <label>Username:</label>
+                <input type="text" name="username" value={formData.username} onChange={handleChange} required />
+
+                <label>Email (@exeter.ac.uk only):</label>
+                <input type="email" name="email" value={formData.email} onChange={handleChange} required />
+
+                <label>Password:</label>
+                <input type="password" name="password" value={formData.password} onChange={handleChange} required />
+
+                <label>Confirm Password:</label>
+                <input type="password" name="passwordagain" value={formData.passwordagain} onChange={handleChange} required />
+
+                <button type="submit">Register</button>
+            </form>
+        </div>
+    );
 };
 
 export default Register;

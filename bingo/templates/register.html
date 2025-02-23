@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+</head>
+<body>
+    <h2>Register</h2>
+    <form id="registerForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="email">Email (@exeter.ac.uk only):</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <label for="passwordagain">Confirm Password:</label>
+        <input type="password" id="passwordagain" name="passwordagain" required>  <!-- ✅ Ensure this exists -->
+
+        <button type="submit">Register</button>
+    </form>
+
+    <script>
+        document.getElementById("registerForm").addEventListener("submit", function(event) {
+            event.preventDefault();  // Prevent page refresh
+
+            const username = document.getElementById("username").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const passwordagain = document.getElementById("passwordagain").value;  // ✅ Ensure this is retrieved
+
+            if (!passwordagain) {
+                console.error("DEBUG: `passwordagain` is missing in JavaScript");
+            }
+
+            if (password !== passwordagain) {
+                alert("Passwords do not match!");
+                return;
+            }
+
+            const requestData = {
+                username: username,
+                email: email,
+                password: password,
+                passwordagain: passwordagain  // ✅ Ensure this is sent
+            };
+
+            console.log("DEBUG: Sending request data:", requestData);  // ✅ Debug log to see what's being sent
+
+            fetch("http://127.0.0.1:8000/api/register/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("DEBUG: Received response:", data);  // ✅ Debug log for response
+                if (data.error) {
+                    alert("Error: " + data.error);
+                } else {
+                    alert("Registration successful! You can now log in.");
+                }
+            })
+            .catch(error => console.error("DEBUG: Fetch error:", error));
+        });
+    </script>
+</body>
+</html>

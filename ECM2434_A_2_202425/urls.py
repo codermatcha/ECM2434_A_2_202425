@@ -1,19 +1,15 @@
 from django.contrib import admin
 from django.urls import path, include
-from django.http import HttpResponse
-from django.conf import settings
-
-# Test homepage
-def home(request):
-    return HttpResponse("Hello, Django is running!")
+from django.conf import settings  # Import settings
+import debug_toolbar  # Import Debug Toolbar for development
 
 urlpatterns = [
-    path('admin/', admin.site.urls),  # Django Admin Panel
-    path('', home),  # Homepage at '/'
-    path('bingo/', include('bingo.urls')),  # Includes all API routes from the 'bingo' app
+    path("admin/", admin.site.urls),  # Admin panel
+    path("", include("bingo.urls")),  # Include URLs from the bingo app
 ]
 
-# Debug Toolbar (Only if settings.DEBUG is True)
+# ✅ Only include Debug Toolbar if DEBUG mode is enabled
 if settings.DEBUG:
-    import debug_toolbar
-    urlpatterns += [path('__debug__/', include(debug_toolbar.urls))]
+    urlpatterns += [
+        path("__debug__/", include(debug_toolbar.urls)),  # Debug toolbar route
+    ]

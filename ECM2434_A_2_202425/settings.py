@@ -1,6 +1,9 @@
 import os
 from pathlib import Path
 
+AUTH_USER_MODEL = "bingo.User"
+WSGI_APPLICATION = 'ECM2434_A_2_202425.wsgi.application'
+
 # 1️⃣ Base Directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -35,8 +38,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.security.SecurityMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware', # Allow frontend requests
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -64,7 +67,15 @@ CORS_ALLOW_HEADERS = [
     'Content-Type',
     'Authorization',
 ]
-CORS_ALLOWED_ALL_ORGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Allow requests from React
+]
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+CORS_ALLOW_HEADERS = ["Authorization", "Content-Type"]
+
+# ✅ CSRF Settings for API requests
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
 
 # 6️⃣ Django REST Framework Config
 REST_FRAMEWORK = {
@@ -118,7 +129,7 @@ SIMPLE_JWT = {
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "templates"],  # You can modify this if needed
+        'DIRS': [os.path.join(BASE_DIR, 'bingo', 'templates')],  # Add templates path
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
