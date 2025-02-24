@@ -1,24 +1,33 @@
 from django.urls import path
-from django.shortcuts import render
-from .views import register_user, login_user, get_user_profile  # ✅ Ensure these functions exist in views.py
+from django.contrib import admin
+from . import views
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework.routers import DefaultRouter
 
-# Home Page View
-def home_page(request):
-    return render(request, "home.html")
+# Remove this admin class as it's not properly configured and not needed in urls.py
+# @admin.register
+# class CustomAdmin(admin.ModelAdmin):
+#     pass
 
-# Register Page View
-def register_page(request):
-    return render(request, "register.html")
-
-# Login Page View
-def login_page(request):
-    return render(request, "login.html")  
+router = DefaultRouter()
+router.register(r'challenges', views.ChallengeViewSet)
+router.register(r'user-challenges', views.UserChallengeViewSet)
+router.register(r'leaderboard', views.LeaderboardViewSet)
+router.register(r'rewards', views.RewardViewSet)
 
 urlpatterns = [
-    path("", home_page, name="home"),  # Home page
-    path("register/", register_page, name="register_page"),  # Register page
-    path("login/", login_page, name="login_page"),  # Login page
-    path("api/register/", register_user, name="register_user"),  # Register API
-    path("api/login/", login_user, name="login_user"),  # ✅ Login API
-    path("api/profile/", get_user_profile, name="user_profile"),  # ✅ Profile API
+    # Authentication
+    path('register/', views.RegisterUserView.as_view(), name='register'),
+    path('login/', views.login_user, name='login'),
+    
+    # Game functionality
+    path('tasks/', views.tasks, name='tasks'),
+    path('complete-task/', views.complete_task, name='complete_task'),
+    path('leaderboard/', views.leaderboard, name='leaderboard'),
+    path('check-user/<str:username>/', views.check_user, name='check_user'),
+    path('profile/', views.get_user_profile, name='user_profile'),
+    path('admin/', admin.site.urls),
 ]
+
+urlpatterns += router.urls
+
