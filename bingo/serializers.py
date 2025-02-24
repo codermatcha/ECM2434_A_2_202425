@@ -3,7 +3,8 @@ from .models import Task, UserTask, Leaderboard
 from django.contrib.auth.models import User
 from django.db import models
 from django.conf import settings
-    
+from .models import Challenge, UserChallenge, Reward
+
 from rest_framework import serializers
 from .models import User
 import logging
@@ -59,3 +60,18 @@ class LeaderboardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Leaderboard
         fields = ['user', 'points']
+
+class ChallengeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Challenge
+        fields = '__all__'
+
+class UserChallengeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserChallenge
+        fields = '__all__'
+
+class RewardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reward
+        fields = '__all__'
