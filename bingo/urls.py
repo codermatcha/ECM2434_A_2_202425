@@ -1,30 +1,27 @@
 from django.urls import path
-from django.http import HttpResponse
-from django.contrib.auth import views as auth_views
-from .views import (
-    login_user, RegisterUserView, home_view,
-    player_dashboard, gamekeeper_dashboard, developer_dashboard,
-    tasks, complete_task, leaderboard
-)
+from . import views
 from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework.routers import DefaultRouter
 
-# New home view for the bingo app
-def bingo_home(request):
-    return HttpResponse("Welcome to the Bingo API!")
+
+router = DefaultRouter()
+router.register(r'challenges', views.ChallengeViewSet)
+router.register(r'user-challenges', views.UserChallengeViewSet)
+router.register(r'leaderboard', views.LeaderboardViewSet)
+router.register(r'rewards', views.RewardViewSet)
+
 urlpatterns = [
-    path('', home_view, name='home'),
-    path('register/', RegisterUserView.as_view(), name='register'),
-    path('login/', login_user, name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
-    
-    # Dashboard URLs
-    path('player/', player_dashboard, name='player_dashboard'),
-    path('gamekeeper/', gamekeeper_dashboard, name='gamekeeper_dashboard'),
-    path('developer/', developer_dashboard, name='developer_dashboard'),
+    # Authentication
+    path('register/', views.RegisterUserView.as_view(), name='register'),
+    path('login/', views.login_user, name='login'),
     
     # Game functionality
-    path('tasks/', tasks, name='tasks'),
-    path('complete_task/', complete_task, name='complete_task'),
-    path('leaderboard/', leaderboard, name='leaderboard'),
+    path('tasks/', views.tasks, name='tasks'),
+    path('complete-task/', views.complete_task, name='complete_task'),
+    path('leaderboard/', views.leaderboard, name='leaderboard'),
+    path('check-user/<str:username>/', views.check_user, name='check_user'),
+    path('profile/', views.get_user_profile, name='user_profile'),
 ]
+
+urlpatterns += router.urls
 
